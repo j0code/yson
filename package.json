@@ -1,0 +1,21 @@
+{
+  "name": "yson",
+  "version": "1.1.0",
+  "description": "YScript Object Notation",
+  "main": "src/main.ts",
+  "scripts": {
+    "test": "node ./dist/test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/j0code/yson.git"
+  },
+  "author": "j0code",
+  "license": "GPL-3.0-or-later",
+  "homepage": "https://github.com/j0code/yson#readme",
+  "type": "module",
+  "devDependencies": {
+    "@types/node": "^20.12.3",
+    "typescript": "^5.4.3"
+  }
+}
