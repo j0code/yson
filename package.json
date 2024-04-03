@@ -1,8 +1,8 @@
 {
-  "name": "yson",
+  "name": "@j0code/yson",
   "version": "1.1.0",
   "description": "YScript Object Notation",
-  "main": "src/main.ts",
+  "main": "dist/main.js",
   "scripts": {
     "test": "node ./dist/test.js"
   },
