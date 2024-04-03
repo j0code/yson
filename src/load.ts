@@ -1,6 +1,7 @@
 import YSON from "./main.js"
+import { YSONValue } from "./types.js"
 
-export async function load(source: URL | string, types?: unknown[]) {
+export async function load(source: URL | string, types?: unknown[]): Promise<YSONValue> {
 	console.log(source)
 
 	if (typeof source == "string") {
@@ -20,8 +21,6 @@ export async function load(source: URL | string, types?: unknown[]) {
 			source = new URL(source)
 		}
 	}
-
-	console.log(source)
 
 	const res = await fetch(source)
 	const raw = await res.text()
