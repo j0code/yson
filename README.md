@@ -8,8 +8,10 @@ Main benefits:
 - Types (coming soon)
 
 ## Install
-##### Coming soon!
 ### JSR
+```
+$ npx jsr add @j0code/yson
+```
 ### NPM
 ```
 $ npm i @j0code/yson
@@ -32,7 +34,7 @@ let t = YSON.parse(s, [YourClass1, YourClass2]) // allows parsing your own class
 
 ### Web
 ```js
-import YSON from "https://j0code.github.io/yson/dist/main.js"
+import YSON from "https://j0code.github.io/yson/main.js"
 ```
 or host it yourself!
 
