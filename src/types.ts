@@ -8,7 +8,7 @@ export type StringifyOptions = {
 	space?: string,
 	spaceAfterPunctuation: boolean,
 	insetSpace: boolean,
-	inlineChilden: number
+	inlineChildren: number
 }
 
 export type Trace = {

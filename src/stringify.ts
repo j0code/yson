@@ -4,7 +4,7 @@ import { StringifyOptions, keyRegex } from "./types.js";
 export function stringify(value: unknown, options: Partial<StringifyOptions> = {}): string | undefined {
 	options.insetSpace ??= Boolean(options.space)
 	options.spaceAfterPunctuation ??= Boolean(options.space)
-	options.inlineChilden ??= 3
+	options.inlineChildren ??= 0
 
 	return stringifyValue(value, options as StringifyOptions, 0)
 }
@@ -56,8 +56,8 @@ function joinValues(arr: unknown[], open: string, close: string, options: String
 
 	let separator = options.spaceAfterPunctuation ? ", " : ","
 
-	if (options.space && arr.length > options.inlineChilden) {
-		const indent = options.space?.repeat(depth) as string
+	if (options.space && arr.length > options.inlineChildren) {
+		const indent = options.space.repeat(depth)
 		const childIndent = indent + options.space
 		return `${open}\n${childIndent}${arr.join(",\n" + childIndent)}\n${indent}${close}`
 	} else {

@@ -127,7 +127,7 @@ Parameters:
   - space: string (adds indentation, white space, and line break characters to the output YSON to make it easier to read)
   - spaceAfterPunctuation: boolean (adds spaces after `,` and `:`)
   - insetSpace: boolean (adds spaces in arrays and objects (`[1, 2]` -> `[ 1, 2 ]`))
-  - inlineChilden: number (max. amount array/object children before inserting line breaks (only applicable when space is speified), default: 3)
+  - inlineChildren: number (max. amount array/object children before inserting line breaks (only applicable when space is specified), default: 0)
 
 YSON will automatically include the class name derived from `obj.constructor.name`.
 
