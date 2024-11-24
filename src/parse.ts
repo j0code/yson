@@ -91,6 +91,8 @@ function parseArray(raw: string, types: any[], options: ParseOptions, i: number,
 		value.push(result.value)
 		i = result.i
 
+		while (/\s/.test(raw[i])) i++
+
 		if (raw[i] == "]") return { value, i: i + 1 }
 		if (raw[i] != ",") throw new YSONSyntaxError(`Unexpected token '${raw[i]}' in YSON`, i, trace)
 	}
