@@ -1,15 +1,7 @@
 import { escape } from "./escape.js";
 import { StringifyOptions, keyRegex } from "./types.js";
 
-export function stringify(value: unknown, options: Partial<StringifyOptions> = {}): string | undefined {
-	options.insetSpace ??= Boolean(options.space)
-	options.spaceAfterPunctuation ??= Boolean(options.space)
-	options.inlineChildren ??= 0
-
-	return stringifyValue(value, options as StringifyOptions, 0)
-}
-
-function stringifyValue(value: unknown, options: StringifyOptions, depth: number): string | undefined {
+export function stringifyValue(value: unknown, options: StringifyOptions, depth: number): string | undefined {
 	switch (typeof value) {
 		case "boolean":
 			return value ? "true" : "false"
@@ -43,6 +35,8 @@ function stringifyObject(obj: Record<string, unknown>, options: StringifyOptions
 
 	for (let key in obj) {
 		const value = obj[key]
+		if (value == undefined) continue // do not emit undefined properties
+
 		if (!keyRegex.test(key)) key = escape(key)
 
 		kvpairs.push(`${key}${colon}${stringifyValue(value, options, depth + 1)}`)

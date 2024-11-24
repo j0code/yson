@@ -2,20 +2,7 @@ import YSONSyntaxError from "./YSONSyntaxError.js"
 import { unescape } from "./escape.js"
 import { ParseOptions, ReturnValue, Trace, YSONValue, keyCharRegex } from "./types.js"
 
-export function parse(raw: string, types: any[] = [], options: ParseOptions = {}): YSONValue {
-	let { value, i } = parseValue(raw, types, options, 0, { path: "" }, true)
-
-	while (/\s/.test(raw[i])) i++
-
-	if (i < raw.length) { // error
-		console.log(raw, value, i, raw.length)
-		return
-	}
-
-	return value
-}
-
-function parseValue(raw: string, types: any[], options: ParseOptions, startI: number, trace: Trace, allowEnd: boolean = false): ReturnValue<YSONValue> {
+export function parseValue(raw: string, types: any[], options: ParseOptions, startI: number, trace: Trace, allowEnd: boolean = false): ReturnValue<YSONValue> {
 	let value = ""
 
 	let i = startI
