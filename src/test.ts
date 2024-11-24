@@ -1,4 +1,4 @@
-import YSON from "./main.js"
+import YSON from "./YSON.js"
 
 const tests = {
 	raw:    ["null", "true", "false", "0", "1.5", "#abc123", `"hello world"`, "[]", "[1, 2, true]", "{}", `{key: "value", "u\\n": -3e4, w: [false, [], {}]}`],

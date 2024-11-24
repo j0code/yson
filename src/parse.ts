@@ -1,5 +1,5 @@
 import YSONSyntaxError from "./YSONSyntaxError.js"
-import { unescape } from "./escape.js"
+import { escape, unescape } from "./escape.js"
 import { ParseOptions, ReturnValue, Trace, YSONValue, keyCharRegex } from "./types.js"
 
 export function parseValue(raw: string, types: any[], options: ParseOptions, startI: number, trace: Trace, allowEnd: boolean = false): ReturnValue<YSONValue> {
@@ -81,7 +81,7 @@ function parseArray(raw: string, types: any[], options: ParseOptions, i: number,
 		while (/\s/.test(raw[i])) i++
 
 		if (raw[i] == "]") return { value, i: i + 1 }
-		if (raw[i] != ",") throw new YSONSyntaxError(`Unexpected token '${raw[i]}' in YSON`, i, trace)
+		if (raw[i] != ",") throw new YSONSyntaxError(`Unexpected token '${escape(raw[i])}' in YSON`, i, trace)
 	}
 
 	// error
@@ -101,7 +101,7 @@ function parseObject(raw: string, types: any[], options: ParseOptions, i: number
 		i = keyResult.i
 
 		//console.log(keyResult, i, raw[i])
-		if (raw[i] != ":") throw new YSONSyntaxError(`Unexpected token '${raw[i]}' in YSON`, i, trace)
+		if (raw[i] != ":") throw new YSONSyntaxError(`Unexpected token '${escape(raw[i])}' in YSON`, i, trace)
 
 		const valueResult = parseValue(raw, types, options, i + 1, { path: trace.path.length > 0 ? `${trace.path}.${keyResult.value}` : keyResult.value })
 		i = valueResult.i
@@ -111,7 +111,7 @@ function parseObject(raw: string, types: any[], options: ParseOptions, i: number
 		while (/\s/.test(raw[i])) i++
 
 		if (raw[i] == "}") return { value, i: i + 1 }
-		if (raw[i] != ",") throw new YSONSyntaxError(`Unexpected token '${raw[i]}' in YSON`, i, trace)
+		if (raw[i] != ",") throw new YSONSyntaxError(`Unexpected token '${escape(raw[i])}' in YSON`, i, trace)
 	}
 
 	// error
@@ -134,7 +134,7 @@ function parseKey(raw: string, types: any[], options: ParseOptions, i: number, t
 
 		//console.log(raw, i, c)
 		if (c == ":") return { value, i }
-		if (!keyCharRegex.test(raw[i])) throw new YSONSyntaxError(`Unexpected token '${raw[i]}' in YSON`, i, trace)
+		if (!keyCharRegex.test(raw[i])) throw new YSONSyntaxError(`Unexpected token '${escape(raw[i])}' in YSON`, i, trace)
 
 		value += c
 	}

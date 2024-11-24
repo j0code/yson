@@ -30,6 +30,7 @@ export default class YSON {
 	 * @param value value to stringify
 	 * @param options StringifyOptions
 	 * @returns stringified value or undefined if `value` is undefined
+	 * @throws YSONSyntaxError
 	 */
 	static stringify(value: unknown, options: Partial<StringifyOptions> = {}): string | undefined {
 		options.insetSpace ??= Boolean(options.space)
@@ -45,10 +46,9 @@ export default class YSON {
 	 * @param types types to recognise and parse
 	 * @param options (reserved for future use)
 	 * @returns Promise of parsed YSON value
+	 * @throws YSONSyntaxError
 	 */
 	static async load(source: URL | string, types?: unknown[], options: ParseOptions = {}): Promise<YSONValue> {
-		console.log(source)
-	
 		if (typeof source == "string") {
 			let baseUrl
 			if ("location" in globalThis) {
@@ -78,4 +78,4 @@ export type YSONValue = types.YSONValue
 export type ParseOptions = types.ParseOptions
 export type StringifyOptions = types.StringifyOptions
 export type Trace = types.Trace
-export type YSONSyntaxError = _YSONSyntaxError
+export const YSONSyntaxError = _YSONSyntaxError
