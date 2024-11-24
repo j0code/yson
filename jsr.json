@@ -1,5 +1,5 @@
 {
 	"name": "@j0code/yson",
-	"version": "1.1.3",
+	"version": "1.1.4",
 	"exports": "./src/main.ts"
 }

@@ -1,6 +1,6 @@
 import { parseValue } from "./parse.js"
 import { stringifyValue } from "./stringify.js"
-import { ParseOptions, StringifyOptions, YSONValue } from "./types.js"
+import type * as types from "./types.js"
 
 export default class YSON {
 
@@ -72,3 +72,9 @@ export default class YSON {
 	}
 
 }
+
+export type YSONValue = types.YSONValue
+export type ParseOptions = types.ParseOptions
+export type StringifyOptions = types.StringifyOptions
+export type Trace = types.Trace
+export type * from "./YSONSyntaxError.js"
