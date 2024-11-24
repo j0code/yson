@@ -14,7 +14,7 @@ export default class YSONSyntaxError extends SyntaxError {
 		this.trace = trace
 	}
 
-	get message() {
+	get message(): string {
 		const { path } = this.trace
 		return `${this.rawMessage} at ${escape(path)} (${this.index})`
 	}
