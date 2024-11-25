@@ -4,7 +4,7 @@
 	"exports": {
 		".": "./src/YSON.ts",
 		"./YSONError": "./src/YSONError.ts",
-		"./YSONSyntaxError": "./src/YSONError.ts",
+		"./YSONSyntaxError": "./src/YSONSyntaxError.ts",
 		"./types": "./src/types.ts"
 	}
 }
