@@ -1,6 +1,8 @@
+import { defaultRevivers } from "./defaultRevivers.js"
 import { parseValue } from "./parse.js"
 import { stringifyValue } from "./stringify.js"
 import type * as types from "./types.js"
+import _YSONError from "./YSONError.js"
 import _YSONSyntaxError from "./YSONSyntaxError.js"
 
 export default class YSON {
@@ -8,12 +10,12 @@ export default class YSON {
 	/**
 	 * Parses raw YSON strings
 	 * @param raw raw YSON string
-	 * @param types types to recognise and parse
-	 * @param options (reserved for future use)
+	 * @param types types to recognise and parse (optional)
+	 * @param options (reserved for future use) (optional)
 	 * @returns parsed YSON value
 	 */
 	static parse(raw: string, types: Record<string, types.YSONParseType> = {}, options: ParseOptions = {}): YSONValue {
-		let { value, i } = parseValue(raw, types, options, 0, { path: "" }, true)
+		let { value, i } = parseValue(raw, { ...defaultRevivers, ...types }, options, 0, { path: "" }, true)
 	
 		while (/\s/.test(raw[i])) i++
 	
@@ -28,7 +30,7 @@ export default class YSON {
 	/**
 	 * Stringifies YSON values
 	 * @param value value to stringify
-	 * @param options StringifyOptions
+	 * @param options StringifyOptions (optional)
 	 * @returns stringified value or undefined if `value` is undefined
 	 * @throws YSONSyntaxError
 	 */
@@ -42,9 +44,9 @@ export default class YSON {
 
 	/**
 	 * Loads and parses raw YSON strings from an URL
-	 * @param source URL to source .yson file
-	 * @param types types to recognise and parse
-	 * @param options (reserved for future use)
+	 * @param source URL or local path to source .yson file
+	 * @param types types to recognise and parse (optional)
+	 * @param options (reserved for future use) (optional)
 	 * @returns Promise of parsed YSON value
 	 * @throws YSONSyntaxError
 	 */
@@ -79,6 +81,8 @@ export type ParseOptions = types.ParseOptions
 export type StringifyOptions = types.StringifyOptions
 export type Trace = types.Trace
 export type YSONStringifiable = types.YSONStringifiable
+export type YSONReviverInfo = types.YSONReviverInfo
 export type YSONReviver<T> = types.YSONReviver<T>
 export type YSONParseType = types.YSONParseType
+export const YSONError = _YSONError
 export const YSONSyntaxError = _YSONSyntaxError

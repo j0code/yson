@@ -32,6 +32,33 @@ export function stringifyValue(value: unknown, options: StringifyOptions, depth:
 			}
 
 			if (value instanceof Array) return stringifyArray(value, options, depth)
+			if (value instanceof Map) {
+				const newValue = Object.fromEntries(value.entries())
+				const raw = stringifyObject(newValue, options, depth)
+				return `Map${options.spaceAfterPunctuation ? " " : ""}${raw}`
+			}
+			if (value instanceof Set) {
+				const newValue = Array.from(value.values())
+				const raw = stringifyArray(newValue, options, depth)
+				return `Set${options.spaceAfterPunctuation ? " " : ""}${raw}`
+			}
+			if (value instanceof Date) {
+				const newValue = value.toISOString()
+				const raw = escape(newValue)
+				return `Date${options.spaceAfterPunctuation ? " " : ""}${raw}`
+			}
+			if (value instanceof URL) {
+				const newValue = value.href
+				const raw = escape(newValue)
+				return `URL${options.spaceAfterPunctuation ? " " : ""}${raw}`
+			}
+			if (ArrayBuffer.isView(value) || value instanceof ArrayBuffer) {
+				const type = value.constructor.name
+				if (value instanceof DataView) value = value.buffer
+				if (value instanceof ArrayBuffer) value = new Uint8Array(value)
+				const raw = stringifyArray(Array.from(value as []), options, depth)
+				return `${type}${options.spaceAfterPunctuation ? " " : ""}${raw}`
+			}
 
 			return stringifyObject(value as Record<string, unknown>, options, depth)
 	}
@@ -44,19 +71,19 @@ function stringifyArray(arr: unknown[], options: StringifyOptions, depth: number
 }
 
 function stringifyObject(obj: Record<string, unknown>, options: StringifyOptions, depth: number): string {
-	let colon = options.spaceAfterPunctuation ? ": " : ":"
+	const colon = options.spaceAfterPunctuation ? ": " : ":"
+	const type = obj.constructor.name
 	const kvpairs = []
-
+	
 	for (let key in obj) {
 		const value = obj[key]
-		if (value == undefined) continue // do not emit undefined properties
+		if (value == undefined || typeof value == "function") continue // do not emit undefined properties and functions
 
 		if (!keyRegex.test(key)) key = escape(key)
 
 		kvpairs.push(`${key}${colon}${stringifyValue(value, options, depth + 1)}`)
 	}
 
-	const type = obj.constructor.name
 	const objectLiteral = joinValues(kvpairs, "{", "}", options, depth)
 
 	if (type && type != "Object") {

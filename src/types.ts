@@ -1,4 +1,4 @@
-export type YSONValue = string | number | boolean | unknown[] | Record<string, unknown> | null | undefined
+export type YSONValue = string | number | bigint | boolean | unknown[] | Record<string, unknown> | null | undefined
 
 export type ReturnValue<T> = { value: T, i: number }
 
@@ -19,10 +19,17 @@ export interface YSONStringifiable {
 	toYSON: () => string | any[] | Record<string, any> | Set<any> | Map<any, any>
 }
 
+export type YSONReviverInfo = {
+	/**
+	 * `name` - name identifying the type found in raw YSON string
+	 */
+	name: string
+}
+
 /**
  * Return undefined or throw an Error if x is not revivable for type T
  */
-export type YSONReviver<T> = (x: string | unknown[] | Record<string, unknown>) => T | undefined
+export type YSONReviver<T> = (x: string | unknown[] | Record<string, unknown>, info: YSONReviverInfo) => T | undefined
 
 export interface YSONParsable<T> {
 	fromYSON: YSONReviver<T>

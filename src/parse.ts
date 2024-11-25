@@ -1,5 +1,7 @@
+import YSONError from "./YSONError.js"
 import YSONSyntaxError from "./YSONSyntaxError.js"
-import { escape, unescape } from "./escape.js"
+import { defaultRevivers } from "./defaultRevivers.js"
+import { escape, escapeBare, unescape } from "./escape.js"
 import { ParseOptions, ReturnValue, Trace, YSONParseType, YSONReviver, YSONValue, keyCharRegex } from "./types.js"
 
 export function parseValue(raw: string, types: Record<string, YSONParseType>, options: ParseOptions, startI: number, trace: Trace, allowEnd: boolean = false): ReturnValue<YSONValue> {
@@ -13,19 +15,19 @@ export function parseValue(raw: string, types: Record<string, YSONParseType>, op
 		if (c == "[") {
 			const result = parseArray(raw, types, options, i + 1, trace)
 
-			return parseType(value, result.value, types, result.i)
+			return parseType(value, result.value, types, result.i, trace)
 		}
 
 		if (c == "{") {
 			const result = parseObject(raw, types, options, i + 1, trace)
 
-			return parseType(value, result.value, types, result.i)
+			return parseType(value, result.value, types, result.i, trace)
 		}
 
 		if (c == "\"") {
 			const result = parseString(raw, types, options, i + 1, trace)
 
-			return parseType(value, result.value, types, result.i)
+			return parseType(value, result.value, types, result.i, trace)
 		}
 
 		if (c == "," || c == "]" || c == "}") return { value: parseLiteral(value, startI, trace), i }
@@ -78,7 +80,7 @@ function parseArray(raw: string, types: Record<string, YSONParseType>, options: 
 		while (/\s/.test(raw[i])) i++
 
 		if (raw[i] == "]") return { value, i: i + 1 }
-		if (raw[i] != ",") throw new YSONSyntaxError(`Unexpected token '${escape(raw[i])}' in YSON`, i, trace)
+		if (raw[i] != ",") throw new YSONSyntaxError(`Unexpected token '${escapeBare(raw[i])}' in YSON`, i, trace)
 	}
 
 	// error
@@ -97,8 +99,10 @@ function parseObject(raw: string, types: Record<string, YSONParseType>, options:
 		const keyResult = parseKey(raw, types, options, i, trace)
 		i = keyResult.i
 
+		if (keyResult.value.length == 0) throw new YSONSyntaxError(`Expected property name or '}' in YSON`, i, trace)
+
 		//console.log(keyResult, i, raw[i])
-		if (raw[i] != ":") throw new YSONSyntaxError(`Unexpected token '${escape(raw[i])}' in YSON`, i, trace)
+		if (raw[i] != ":") throw new YSONSyntaxError(`Unexpected token '${escapeBare(raw[i])}' in YSON`, i, trace)
 
 		const valueResult = parseValue(raw, types, options, i + 1, { path: trace.path.length > 0 ? `${trace.path}.${keyResult.value}` : keyResult.value })
 		i = valueResult.i
@@ -108,7 +112,7 @@ function parseObject(raw: string, types: Record<string, YSONParseType>, options:
 		while (/\s/.test(raw[i])) i++
 
 		if (raw[i] == "}") return { value, i: i + 1 }
-		if (raw[i] != ",") throw new YSONSyntaxError(`Unexpected token '${escape(raw[i])}' in YSON`, i, trace)
+		if (raw[i] != ",") throw new YSONSyntaxError(`Unexpected token '${escapeBare(raw[i])}' in YSON`, i, trace)
 	}
 
 	// error
@@ -131,7 +135,7 @@ function parseKey(raw: string, types: Record<string, YSONParseType>, options: Pa
 
 		//console.log(raw, i, c)
 		if (c == ":") return { value, i }
-		if (!keyCharRegex.test(raw[i])) throw new YSONSyntaxError(`Unexpected token '${escape(raw[i])}' in YSON`, i, trace)
+		if (!keyCharRegex.test(raw[i])) throw new YSONSyntaxError(`Unexpected token '${escapeBare(raw[i])}' in YSON`, i, trace)
 
 		value += c
 	}
@@ -140,7 +144,7 @@ function parseKey(raw: string, types: Record<string, YSONParseType>, options: Pa
 	throw new YSONSyntaxError(`Unexpected end of YSON input`, i, trace)
 }
 
-function parseLiteral(value: string, i: number, trace: Trace): number | boolean | null {
+function parseLiteral(value: string, i: number, trace: Trace): number | bigint | boolean | null {
 	value = value.trim()
 	//console.log(`literal: >${value}<`)
 
@@ -150,16 +154,18 @@ function parseLiteral(value: string, i: number, trace: Trace): number | boolean 
 
 	if (value.startsWith("#")) { // hex
 		const hex = parseInt(value.substring(1), 16)
-		if (!isNaN(hex)) return hex
+		if (!isNaN(hex)) return BigInt(hex)
+
+		throw new YSONSyntaxError(`Invalid literal ${value} in YSON`, i, trace)
 	}
 
-	const num = Number(value) // temp (allows 0x123 and 0b10)
+	const num = parseFloat(value) // temp (allows 0x123 and 0b10)
 	if (!isNaN(num)) return num
 
 	throw new YSONSyntaxError(`Invalid literal ${value} in YSON`, i, trace)
 }
 
-function parseType(typeName: string, value: any, types: Record<string, YSONParseType>, i: number): ReturnValue<any> {
+function parseType(typeName: string, value: any, types: Record<string, YSONParseType>, i: number, trace: Trace): ReturnValue<any> {
 	typeName = typeName.trim()
 	if (!typeName || !(typeName in types)) return { value, i }
 	const type = types[typeName]
@@ -169,15 +175,19 @@ function parseType(typeName: string, value: any, types: Record<string, YSONParse
 		reviver = type.fromYSON
 	} else if (typeof type == "function") {
 		reviver = type
-	} else throw "wee woo wee woo"
+	} else throw new YSONError(`Invalid parse type ${typeName}`, i, trace)
 
 	let newValue
 	try {
-		newValue = reviver(value)
+		newValue = reviver(value, { name: typeName })
 	} catch (e) {
-		console.log("E", e, reviver)
-		return { value, i }
-	} // TODO: throw error if not revivable (newValue undefined or Error thrown)
+		if (Object.values(defaultRevivers).includes(reviver)) {
+			throw new YSONError((e as Error).message, i, trace)
+		}
+		throw new YSONError(`Parsing of type ${typeName} failed`, i, trace, e)
+	}
 
-	return { value: newValue || value, i}
+	if (!newValue) throw new YSONError(`Parsing of type ${typeName} failed`, i, trace)
+
+	return { value: newValue, i}
 }

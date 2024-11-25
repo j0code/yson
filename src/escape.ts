@@ -10,6 +10,11 @@ export function escape(s: string) {
 
 }
 
+export function escapeBare(s: string) {
+	s = escape(s)
+	return s.substring(1, s.length - 1)
+}
+
 export function unescape(s: string) {
 	return JSON.parse(`"${s}"`)
 }

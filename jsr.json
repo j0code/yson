@@ -1,5 +1,10 @@
 {
 	"name": "@j0code/yson",
-	"version": "1.2.0",
-	"exports": "./src/YSON.ts"
+	"version": "1.2.1",
+	"exports": {
+		".": "./src/YSON.ts",
+		"./YSONError": "./src/YSONError.ts",
+		"./YSONSyntaxError": "./src/YSONError.ts",
+		"./types": "./src/types.ts"
+	}
 }
