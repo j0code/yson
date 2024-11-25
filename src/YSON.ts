@@ -12,7 +12,7 @@ export default class YSON {
 	 * @param options (reserved for future use)
 	 * @returns parsed YSON value
 	 */
-	static parse(raw: string, types: any[] = [], options: ParseOptions = {}): YSONValue {
+	static parse(raw: string, types: Record<string, types.YSONParseType> = {}, options: ParseOptions = {}): YSONValue {
 		let { value, i } = parseValue(raw, types, options, 0, { path: "" }, true)
 	
 		while (/\s/.test(raw[i])) i++
@@ -48,7 +48,7 @@ export default class YSON {
 	 * @returns Promise of parsed YSON value
 	 * @throws YSONSyntaxError
 	 */
-	static async load(source: URL | string, types?: unknown[], options: ParseOptions = {}): Promise<YSONValue> {
+	static async load(source: URL | string, types: Record<string, types.YSONParseType> = {}, options: ParseOptions = {}): Promise<YSONValue> {
 		if (typeof source == "string") {
 			let baseUrl
 			if ("location" in globalThis) {
@@ -78,4 +78,7 @@ export type YSONValue = types.YSONValue
 export type ParseOptions = types.ParseOptions
 export type StringifyOptions = types.StringifyOptions
 export type Trace = types.Trace
+export type YSONStringifiable = types.YSONStringifiable
+export type YSONReviver<T> = types.YSONReviver<T>
+export type YSONParseType = types.YSONParseType
 export const YSONSyntaxError = _YSONSyntaxError

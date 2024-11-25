@@ -1,8 +1,8 @@
 import YSONSyntaxError from "./YSONSyntaxError.js"
 import { escape, unescape } from "./escape.js"
-import { ParseOptions, ReturnValue, Trace, YSONValue, keyCharRegex } from "./types.js"
+import { ParseOptions, ReturnValue, Trace, YSONParseType, YSONReviver, YSONValue, keyCharRegex } from "./types.js"
 
-export function parseValue(raw: string, types: any[], options: ParseOptions, startI: number, trace: Trace, allowEnd: boolean = false): ReturnValue<YSONValue> {
+export function parseValue(raw: string, types: Record<string, YSONParseType>, options: ParseOptions, startI: number, trace: Trace, allowEnd: boolean = false): ReturnValue<YSONValue> {
 	let value = ""
 
 	let i = startI
@@ -13,22 +13,19 @@ export function parseValue(raw: string, types: any[], options: ParseOptions, sta
 		if (c == "[") {
 			const result = parseArray(raw, types, options, i + 1, trace)
 
-			if (value.trim()) throw "a types not implemented"
-			return result
+			return parseType(value, result.value, types, result.i)
 		}
 
 		if (c == "{") {
 			const result = parseObject(raw, types, options, i + 1, trace)
 
-			if (value.trim()) throw "o types not implemented"
-			return result
+			return parseType(value, result.value, types, result.i)
 		}
 
 		if (c == "\"") {
 			const result = parseString(raw, types, options, i + 1, trace)
 
-			if (value.trim()) throw "s types not implemented"
-			return result
+			return parseType(value, result.value, types, result.i)
 		}
 
 		if (c == "," || c == "]" || c == "}") return { value: parseLiteral(value, startI, trace), i }
@@ -41,7 +38,7 @@ export function parseValue(raw: string, types: any[], options: ParseOptions, sta
 	throw new YSONSyntaxError(`Unexpected end of YSON input`, i, trace)
 }
 
-function parseString(raw: string, types: any[], options: ParseOptions, i: number, trace: Trace): ReturnValue<string> {
+function parseString(raw: string, types: Record<string, YSONParseType>, options: ParseOptions, i: number, trace: Trace): ReturnValue<string> {
 	let value = ""
 
 	for (; i < raw.length; i++) {
@@ -63,7 +60,7 @@ function parseString(raw: string, types: any[], options: ParseOptions, i: number
 	throw new YSONSyntaxError(`Unexpected end of YSON input`, i, trace)
 }
 
-function parseArray(raw: string, types: any[], options: ParseOptions, i: number, trace: Trace): ReturnValue<unknown[]> {
+function parseArray(raw: string, types: Record<string, YSONParseType>, options: ParseOptions, i: number, trace: Trace): ReturnValue<unknown[]> {
 	const value: unknown[] = []
 
 	for (; i < raw.length; i++) {
@@ -88,7 +85,7 @@ function parseArray(raw: string, types: any[], options: ParseOptions, i: number,
 	throw new YSONSyntaxError(`Unexpected end of YSON input`, i, trace)
 }
 
-function parseObject(raw: string, types: any[], options: ParseOptions, i: number, trace: Trace): ReturnValue<Record<string, unknown>> {
+function parseObject(raw: string, types: Record<string, YSONParseType>, options: ParseOptions, i: number, trace: Trace): ReturnValue<Record<string, unknown>> {
 	const value: Record<string, unknown> = {}
 
 	for (; i < raw.length; i++) {
@@ -118,7 +115,7 @@ function parseObject(raw: string, types: any[], options: ParseOptions, i: number
 	throw new YSONSyntaxError(`Unexpected end of YSON input`, i, trace)
 }
 
-function parseKey(raw: string, types: any[], options: ParseOptions, i: number, trace: Trace): ReturnValue<string> {
+function parseKey(raw: string, types: Record<string, YSONParseType>, options: ParseOptions, i: number, trace: Trace): ReturnValue<string> {
 
 	const c = raw[i]
 	if (c == "\"") {
@@ -160,4 +157,27 @@ function parseLiteral(value: string, i: number, trace: Trace): number | boolean 
 	if (!isNaN(num)) return num
 
 	throw new YSONSyntaxError(`Invalid literal ${value} in YSON`, i, trace)
+}
+
+function parseType(typeName: string, value: any, types: Record<string, YSONParseType>, i: number): ReturnValue<any> {
+	typeName = typeName.trim()
+	if (!typeName || !(typeName in types)) return { value, i }
+	const type = types[typeName]
+
+	let reviver: YSONReviver<any>
+	if ("fromYSON" in type) {
+		reviver = type.fromYSON
+	} else if (typeof type == "function") {
+		reviver = type
+	} else throw "wee woo wee woo"
+
+	let newValue
+	try {
+		newValue = reviver(value)
+	} catch (e) {
+		console.log("E", e, reviver)
+		return { value, i }
+	} // TODO: throw error if not revivable (newValue undefined or Error thrown)
+
+	return { value: newValue || value, i}
 }

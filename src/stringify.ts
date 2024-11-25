@@ -1,5 +1,5 @@
 import { escape } from "./escape.js";
-import { StringifyOptions, keyRegex } from "./types.js";
+import { StringifyOptions, isYSONStringifiable, keyRegex } from "./types.js";
 
 export function stringifyValue(value: unknown, options: StringifyOptions, depth: number): string | undefined {
 	switch (typeof value) {
@@ -18,7 +18,21 @@ export function stringifyValue(value: unknown, options: StringifyOptions, depth:
 		case "object":
 			//console.log(value, "is obj")
 			if (value == null) return "null"
+
+			if (isYSONStringifiable(value)) {
+				const newValue = value.toYSON()
+				const type = value.constructor.name
+				if (["string", "object"].includes(typeof newValue)) {
+					const raw = stringifyValue(newValue, options, depth)
+					if (type && type != "Object" && type != "Array") {
+						return `${type}${options.spaceAfterPunctuation ? " " : ""}${raw}`
+					}
+					return raw // perhaps throw an Error? maybe configurable to ignore?
+				}
+			}
+
 			if (value instanceof Array) return stringifyArray(value, options, depth)
+
 			return stringifyObject(value as Record<string, unknown>, options, depth)
 	}
 
@@ -42,7 +56,13 @@ function stringifyObject(obj: Record<string, unknown>, options: StringifyOptions
 		kvpairs.push(`${key}${colon}${stringifyValue(value, options, depth + 1)}`)
 	}
 
-	return joinValues(kvpairs, "{", "}", options, depth)
+	const type = obj.constructor.name
+	const objectLiteral = joinValues(kvpairs, "{", "}", options, depth)
+
+	if (type && type != "Object") {
+		return `${type}${options.spaceAfterPunctuation ? " " : ""}${objectLiteral}`
+	}
+	return objectLiteral
 }
 
 function joinValues(arr: unknown[], open: string, close: string, options: StringifyOptions, depth: number): string {
