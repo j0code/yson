@@ -1,3 +1,8 @@
+/**
+ * types for dealing with the YSON API
+ * @module
+ */
+
 export type YSONValue = string | number | bigint | boolean | unknown[] | Record<string, unknown> | null | undefined
 
 export type ReturnValue<T> = { value: T, i: number }

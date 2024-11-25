@@ -1,6 +1,11 @@
 import { escapeBare } from "./escape.js";
 import { Trace } from "./types.js";
 
+/**
+ * YSONError - for generic YSON errors
+ * @module
+ */
+
 export default class YSONError extends Error {
 
 	rawMessage: string

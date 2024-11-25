@@ -1,9 +1,12 @@
 import { defaultRevivers } from "./defaultRevivers.js"
 import { parseValue } from "./parse.js"
 import { stringifyValue } from "./stringify.js"
-import type * as types from "./types.js"
-import _YSONError from "./YSONError.js"
-import _YSONSyntaxError from "./YSONSyntaxError.js"
+import { ParseOptions, StringifyOptions, YSONParseType, YSONValue } from "./types.js"
+
+/**
+ * YSON - Parse, Stringify, Load
+ * @module
+ */
 
 export default class YSON {
 
@@ -14,7 +17,7 @@ export default class YSON {
 	 * @param options (reserved for future use) (optional)
 	 * @returns parsed YSON value
 	 */
-	static parse(raw: string, types: Record<string, types.YSONParseType> = {}, options: ParseOptions = {}): YSONValue {
+	static parse(raw: string, types: Record<string, YSONParseType> = {}, options: ParseOptions = {}): YSONValue {
 		let { value, i } = parseValue(raw, { ...defaultRevivers, ...types }, options, 0, { path: "" }, true)
 	
 		while (/\s/.test(raw[i])) i++
@@ -50,7 +53,7 @@ export default class YSON {
 	 * @returns Promise of parsed YSON value
 	 * @throws YSONSyntaxError
 	 */
-	static async load(source: URL | string, types: Record<string, types.YSONParseType> = {}, options: ParseOptions = {}): Promise<YSONValue> {
+	static async load(source: URL | string, types: Record<string, YSONParseType> = {}, options: ParseOptions = {}): Promise<YSONValue> {
 		if (typeof source == "string") {
 			let baseUrl
 			if ("location" in globalThis) {
@@ -75,14 +78,3 @@ export default class YSON {
 	}
 
 }
-
-export type YSONValue = types.YSONValue
-export type ParseOptions = types.ParseOptions
-export type StringifyOptions = types.StringifyOptions
-export type Trace = types.Trace
-export type YSONStringifiable = types.YSONStringifiable
-export type YSONReviverInfo = types.YSONReviverInfo
-export type YSONReviver<T> = types.YSONReviver<T>
-export type YSONParseType = types.YSONParseType
-export const YSONError = _YSONError
-export const YSONSyntaxError = _YSONSyntaxError
