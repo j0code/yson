@@ -2,6 +2,7 @@ import { defaultRevivers } from "./defaultRevivers.js"
 import { parseValue } from "./parse.js"
 import { stringifyValue } from "./stringify.js"
 import { ParseOptions, StringifyOptions, YSONParseType, YSONValue } from "./types.js"
+import YSONSyntaxError from "./YSONSyntaxError.js"
 
 /**
  * YSON - Parse, Stringify, Load
@@ -22,9 +23,8 @@ export default class YSON {
 	
 		while (/\s/.test(raw[i])) i++
 	
-		if (i < raw.length) { // error
-			console.log(raw, value, i, raw.length)
-			return
+		if (i < raw.length) {
+			throw new YSONSyntaxError("Unexpected non-whitespace character after YSON", i, { path: "" })
 		}
 	
 		return value
