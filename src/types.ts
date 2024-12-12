@@ -17,23 +17,23 @@ export type ReturnValue<T> = { value: T, i: number }
 
 /**
  * options for parsing
- * @see YSON.parse()
+ * @see YSON.parse
  */
 export type ParseOptions = {}
 
 
 /**
  * options for stringifying
- * @see YSON.stringify()
- * @property {string}  space                  - character(s) used for indentation
- * @property {boolean} spaceAfterPunctuation  - whether a space should be inserted after `:`, `,` and type names
- * @property {boolean} insetSpace             - whether a space should be inserted after `[` and `}` and before `]` and `}`
- * @property {number}  inlineChildren         - amount of children to output inline (example 2: `[1, 2]` but `[\n\t1,\n\t2\n\t3\n]`)
+ * @see YSON.stringify
  */
 export type StringifyOptions = {
+	/** character(s) used for indentation */
 	space?: string,
+	/** whether a space should be inserted after `:`, `,` and type names */
 	spaceAfterPunctuation: boolean,
+	/** whether a space should be inserted after `[` and `}` and before `]` and `}` */
 	insetSpace: boolean,
+	/** amount of children to output inline (example 2: `[1, 2]` but `[\n\t1,\n\t2\n\t3\n]`) */
 	inlineChildren: number
 }
 
@@ -56,7 +56,7 @@ export interface YSONStringifiable {
  * context for YSONReviver execution
  */
 export type YSONReviverInfo = {
-	/** `name` - name identifying the type found in raw YSON string */
+	/** name identifying the type found in raw YSON string */
 	name: string
 }
 
