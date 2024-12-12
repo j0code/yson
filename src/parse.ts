@@ -1,8 +1,8 @@
 import YSONError from "./YSONError.js"
 import YSONSyntaxError from "./YSONSyntaxError.js"
 import { defaultRevivers } from "./defaultRevivers.js"
-import { escape, escapeBare, unescape } from "./escape.js"
-import { ParseOptions, ReturnValue, Trace, YSONParseType, YSONReviver, YSONValue, keyCharRegex } from "./types.js"
+import { escapeBare, unescape } from "./escape.js"
+import { ParseOptions, ReturnValue, Trace, YSONParsable, YSONParseType, YSONReviver, YSONValue, keyCharRegex } from "./types.js"
 
 export function parseValue(raw: string, types: Record<string, YSONParseType>, options: ParseOptions, startI: number, trace: Trace, allowEnd: boolean = false): ReturnValue<YSONValue> {
 	let value = ""
@@ -171,8 +171,12 @@ function parseType(typeName: string, value: any, types: Record<string, YSONParse
 	const type = types[typeName]
 
 	let reviver: YSONReviver<any>
-	if ("fromYSON" in type) {
-		reviver = type.fromYSON
+	if (typeof type == "function" && "fromYSON" in type && typeof type.fromYSON == "function") {
+		reviver = (x, info) => {
+			const value = (type.fromYSON as YSONReviver<any>)(x, info)
+			if (!(value instanceof type)) return undefined
+			return value
+		}
 	} else if (typeof type == "function") {
 		reviver = type
 	} else throw new YSONError(`Invalid parse type ${typeName}`, i, trace)

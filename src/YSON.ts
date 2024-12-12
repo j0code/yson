@@ -37,12 +37,13 @@ export default class YSON {
 	 * @returns stringified value or undefined if `value` is undefined
 	 * @throws YSONSyntaxError
 	 */
-	static stringify(value: unknown, options: Partial<StringifyOptions> = {}): string | undefined {
+	static stringify<T extends unknown = unknown>(value: T, options: Partial<StringifyOptions> = {}): T extends undefined ? undefined : string {
 		options.insetSpace ??= Boolean(options.space)
 		options.spaceAfterPunctuation ??= Boolean(options.space)
 		options.inlineChildren ??= 0
 	
-		return stringifyValue(value, options as StringifyOptions, 0)
+		// @ts-expect-error this should work
+		return typeof value == "undefined" ? undefined : stringifyValue(value, options as StringifyOptions, 0)!
 	}
 
 	/**
