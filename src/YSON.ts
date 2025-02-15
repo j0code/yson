@@ -1,4 +1,5 @@
 import { defaultRevivers } from "./defaultRevivers.js"
+import fs from "fs/promises"
 import { parseValue } from "./parse.js"
 import { stringifyValue } from "./stringify.js"
 import { ParseOptions, StringifyOptions, YSONParseType, YSONValue } from "./types.js"
@@ -60,6 +61,9 @@ export default class YSON {
 			if ("location" in globalThis) {
 				baseUrl = location.href
 				if (!baseUrl.endsWith("/")) baseUrl += "/"
+			} else if (source.startsWith("./") || source.startsWith("../")) {
+				const raw = await fs.readFile(source, { encoding: "utf-8" })
+				return YSON.parse(raw, types, options)
 			} else {
 				baseUrl = `file://${process.cwd()}/`
 			}
