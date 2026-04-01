@@ -1,9 +1,14 @@
 import { defaultRevivers } from "./defaultRevivers.js"
-import fs from "fs/promises"
 import { parseValue } from "./parse.js"
 import { stringifyValue } from "./stringify.js"
 import { ParseOptions, StringifyOptions, YSONParseType, YSONValue } from "./types.js"
 import YSONSyntaxError from "./YSONSyntaxError.js"
+
+let fs: any = null
+
+if (typeof window === "undefined") {
+	fs = (await import("node:fs/promises")).default
+}
 
 /**
  * YSON - Parse, Stringify, Load
@@ -49,6 +54,15 @@ export default class YSON {
 
 	/**
 	 * Loads and parses raw YSON strings from an URL
+	 * 
+	 * In browser contexts,
+	 *   - http(s):// urls are fetched over the network,
+	 *   - paths are resolved relative to the current page and fetched over the network.
+	 * 
+	 * In node (deno, ...) contexts,
+	 *   - http(s):// urls are fetched over the network,
+	 *   - paths are resolved relative to the current working directory and read from the filesystem,
+	 *   - and file:// urls are read from the filesystem.
 	 * @param source URL or local path to source .yson file
 	 * @param types types to recognise and parse (optional)
 	 * @param options (reserved for future use) (optional)
@@ -61,25 +75,24 @@ export default class YSON {
 			if ("location" in globalThis) {
 				baseUrl = location.href
 				if (!baseUrl.endsWith("/")) baseUrl += "/"
-			} else if (source.startsWith("./") || source.startsWith("../")) {
-				const raw = await fs.readFile(source, { encoding: "utf-8" })
-				return YSON.parse(raw, types, options)
 			} else {
 				baseUrl = `file://${process.cwd()}/`
 			}
 	
-			if (source.startsWith("./")) {
-				source = `${baseUrl}${source.substring(2)}`
-			} else if (source.startsWith("../")) {
-				source = `${baseUrl}${source}`
-			} else {
-				source = new URL(source)
-			}
+			source = new URL(source, baseUrl)
 		}
 	
-		const res = await fetch(source)
-		const raw = await res.text()
+		const raw = await fetchFile(source)
 		return YSON.parse(raw, types, options)
 	}
 
+}
+
+async function fetchFile(url: URL): Promise<string> {
+	if (url.protocol == "file:" && !("location" in globalThis)) {
+		return await fs.readFile(url.pathname, "utf-8")
+	}
+
+	const res = await fetch(url)
+	return await res.text()
 }
