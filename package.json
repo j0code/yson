@@ -15,7 +15,7 @@
   "homepage": "https://github.com/j0code/yson#readme",
   "type": "module",
   "devDependencies": {
-    "@types/node": "^25.5.0",
+    "@types/node": "^25.6.0",
     "typescript": "^6.0.2"
   }
 }

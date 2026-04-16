@@ -31,7 +31,7 @@ export function stringifyValue(value: unknown, options: StringifyOptions, depth:
 				}
 			}
 
-			if (value instanceof Array) return stringifyArray(value, options, depth)
+			if (Array.isArray(value)) return stringifyArray(value, options, depth)
 			if (value instanceof Map) {
 				const newValue = Object.fromEntries(value.entries())
 				const raw = stringifyObject(newValue, options, depth)

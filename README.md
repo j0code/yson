@@ -172,7 +172,7 @@ export default class Rectangle {
 
 	// the type annotation is technically not necessary but helps to avoid mistakes and enables code completion
 	static fromYSON: YSONReviver<Rectangle> = x => {
-		if (typeof x != "object" || x instanceof Array) return // reject String and Array types
+		if (typeof x != "object" || Array.isArray(x)) return // reject String and Array types
 
 		if (!("width"  in x)) throw new Error("Rectangles need to have a width")
 		if (!("height" in x)) throw new Error("Rectangles need to have a height")

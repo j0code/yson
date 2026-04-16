@@ -41,8 +41,8 @@ function equals(a: unknown, b: unknown) {
 	if (typeof a != "object" || typeof b != "object") return a == b
 
 	if (a == null) return b == null
-	if (a instanceof Array != b instanceof Array) return false
-	if (a instanceof Array && b instanceof Array) {
+	if (Array.isArray(a) != Array.isArray(b)) return false
+	if (Array.isArray(a) && Array.isArray(b)) {
 		if (a.length != b.length) return false
 	}
 	for (let key in a) {
@@ -95,7 +95,7 @@ class StringClass {
 class Tuple<T> {
 
 	static fromYSON: YSONReviver<Tuple<any>> = x => {
-		if (!(x instanceof Array)) return
+		if (!Array.isArray(x)) return
 		return new Tuple(...x)
 	}
 
