@@ -1,3 +1,4 @@
+import { Temporal } from "@js-temporal/polyfill"
 import { YSONReviver } from "./types.js"
 import YSON from "./YSON.js"
 

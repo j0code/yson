@@ -1,3 +1,4 @@
+import { Temporal } from "@js-temporal/polyfill";
 import { escape } from "./escape.js";
 import { StringifyOptions, TypedArray, isYSONStringifiable, keyRegex } from "./types.js";
 
@@ -92,8 +93,34 @@ function stringifyBuiltin(value: object, options: StringifyOptions, depth: numbe
 	if (value instanceof Set)  result = stringifySet(value, options, depth)
 	if (value instanceof Date) result = stringifyDate(value)
 	if (value instanceof URL)  result = stringifyURL(value)
+
 	if (ArrayBuffer.isView(value) || value instanceof ArrayBuffer) {
 		result = stringifyArrayBufferLike(value, options, depth)
+	}
+
+	if (value instanceof Temporal.Instant) {
+		result = stringifyTemporalInstant(value)
+	}
+	if (value instanceof Temporal.Duration) {
+		result = stringifyTemporalDuration(value)
+	}
+	if (value instanceof Temporal.PlainDate) {
+		result = stringifyTemporalPlainDate(value)
+	}
+	if (value instanceof Temporal.PlainTime) {
+		result = stringifyTemporalPlainTime(value)
+	}
+	if (value instanceof Temporal.PlainDateTime) {
+		result = stringifyTemporalPlainDateTime(value)
+	}
+	if (value instanceof Temporal.PlainMonthDay) {
+		result = stringifyTemporalPlainMonthDay(value)
+	}
+	if (value instanceof Temporal.PlainYearMonth) {
+		result = stringifyTemporalPlainYearMonth(value)
+	}
+	if (value instanceof Temporal.ZonedDateTime) {
+		result = stringifyTemporalZonedDateTime(value)
 	}
 
 	if (result) {
@@ -140,4 +167,52 @@ function stringifyArrayBufferLike(buffer: ArrayBuffer | ArrayBufferView<ArrayBuf
 	const raw = stringifyArray(arr, options, depth)
 
 	return { raw, type }
+}
+
+function stringifyTemporalInstant(instant: Temporal.Instant) {
+	const raw = escape(instant.toString())
+
+	return { raw, type: "Instant" }
+}
+
+function stringifyTemporalDuration(duration: Temporal.Duration) {
+	const raw = escape(duration.toString())
+
+	return { raw, type: "Duration" }
+}
+
+function stringifyTemporalPlainDate(plainDate: Temporal.PlainDate) {
+	const raw = escape(plainDate.toString())
+
+	return { raw, type: "PlainDate" }
+}
+
+function stringifyTemporalPlainTime(plainTime: Temporal.PlainTime) {
+	const raw = escape(plainTime.toString())
+
+	return { raw, type: "PlainTime" }
+}
+
+function stringifyTemporalPlainDateTime(plainDateTime: Temporal.PlainDateTime) {
+	const raw = escape(plainDateTime.toString())
+
+	return { raw, type: "PlainDateTime" }
+}
+
+function stringifyTemporalPlainMonthDay(plainMonthDay: Temporal.PlainMonthDay) {
+	const raw = escape(plainMonthDay.toString())
+
+	return { raw, type: "PlainMonthDay" }
+}
+
+function stringifyTemporalPlainYearMonth(plainYearMonth: Temporal.PlainYearMonth) {
+	const raw = escape(plainYearMonth.toString())
+
+	return { raw, type: "PlainYearMonth" }
+}
+
+function stringifyTemporalZonedDateTime(zonedDateTime: Temporal.ZonedDateTime) {
+	const raw = escape(zonedDateTime.toString())
+
+	return { raw, type: "ZonedDateTime" }
 }
