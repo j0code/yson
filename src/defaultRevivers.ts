@@ -1,4 +1,4 @@
-import { YSONReviver } from "./types.js"
+import { TypedArray, YSONReviver } from "./types.js"
 
 const parseMap: YSONReviver<Map<any, any>> = x => {
 	if (typeof x != "object") throw new Error("Map must be an object or entry array")
@@ -40,8 +40,7 @@ const parseDataView: YSONReviver<DataView> = x => {
 	return new DataView(new Uint8Array(x as []).buffer)
 }
 
-const typedArrays = [Int8Array, Uint8Array, Uint8ClampedArray, Int16Array, Uint16Array, Int32Array, Uint32Array, BigInt64Array, BigUint64Array, Float32Array, Float64Array]
-type  TypedArray  =  Int8Array| Uint8Array| Uint8ClampedArray| Int16Array| Uint16Array| Int32Array| Uint32Array| BigInt64Array| BigUint64Array| Float32Array| Float64Array
+const typedArrays = [Int8Array, Uint8Array, Uint8ClampedArray, Int16Array, Uint16Array, Int32Array, Uint32Array, BigInt64Array, BigUint64Array, Float32Array, Float64Array] as const
 
 const parseTypedArray: YSONReviver<TypedArray> = (x, { name }) => {
 	if (!Array.isArray(x)) throw new Error("TypedArray must be an array")

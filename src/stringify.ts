@@ -1,5 +1,5 @@
 import { escape } from "./escape.js";
-import { StringifyOptions, isYSONStringifiable, keyRegex } from "./types.js";
+import { StringifyOptions, TypedArray, isYSONStringifiable, keyRegex } from "./types.js";
 
 export function stringifyValue(value: unknown, options: StringifyOptions, depth: number): string | undefined {
 	switch (typeof value) {
@@ -32,35 +32,13 @@ export function stringifyValue(value: unknown, options: StringifyOptions, depth:
 			}
 
 			if (Array.isArray(value)) return stringifyArray(value, options, depth)
-			if (value instanceof Map) {
-				const newValue = Object.fromEntries(value.entries())
-				const raw = stringifyObject(newValue, options, depth)
-				return `Map${options.spaceAfterPunctuation ? " " : ""}${raw}`
-			}
-			if (value instanceof Set) {
-				const newValue = Array.from(value.values())
-				const raw = stringifyArray(newValue, options, depth)
-				return `Set${options.spaceAfterPunctuation ? " " : ""}${raw}`
-			}
-			if (value instanceof Date) {
-				const newValue = value.toISOString()
-				const raw = escape(newValue)
-				return `Date${options.spaceAfterPunctuation ? " " : ""}${raw}`
-			}
-			if (value instanceof URL) {
-				const newValue = value.href
-				const raw = escape(newValue)
-				return `URL${options.spaceAfterPunctuation ? " " : ""}${raw}`
-			}
-			if (ArrayBuffer.isView(value) || value instanceof ArrayBuffer) {
-				const type = value.constructor.name
-				if (value instanceof DataView) value = value.buffer
-				if (value instanceof ArrayBuffer) value = new Uint8Array(value)
-				const raw = stringifyArray(Array.from(value as []), options, depth)
-				return `${type}${options.spaceAfterPunctuation ? " " : ""}${raw}`
+
+			let stringified = stringifyBuiltin(value, options, depth)
+			if (stringified == null) {
+				stringified = stringifyObject(value as Record<string, unknown>, options, depth)
 			}
 
-			return stringifyObject(value as Record<string, unknown>, options, depth)
+			return stringified
 	}
 
 	return undefined
@@ -105,4 +83,61 @@ function joinValues(arr: unknown[], open: string, close: string, options: String
 		if (options.insetSpace) return `${open} ${arr.join(separator)} ${close}`
 		return `${open}${arr.join(separator)}${close}`
 	}
+}
+
+function stringifyBuiltin(value: object, options: StringifyOptions, depth: number): string | null {
+	let result: { raw: string, type: string } | null = null
+
+	if (value instanceof Map)  result = stringifyMap(value, options, depth)
+	if (value instanceof Set)  result = stringifySet(value, options, depth)
+	if (value instanceof Date) result = stringifyDate(value)
+	if (value instanceof URL)  result = stringifyURL(value)
+	if (ArrayBuffer.isView(value) || value instanceof ArrayBuffer) {
+		result = stringifyArrayBufferLike(value, options, depth)
+	}
+
+	if (result) {
+		return `${result.type}${options.spaceAfterPunctuation ? " " : ""}${result.raw}`
+	}
+
+	return null
+}
+
+function stringifyMap(map: Map<string, unknown>, options: StringifyOptions, depth: number) {
+	const obj = Object.fromEntries(map.entries())
+	const raw = stringifyObject(obj, options, depth)
+
+	return { raw, type: "Map" }
+}
+
+function stringifySet(set: Set<unknown>, options: StringifyOptions, depth: number) {
+	const arr = Array.from(set.values())
+	const raw = stringifyArray(arr, options, depth)
+
+	return { raw, type: "Set" }
+}
+
+function stringifyDate(date: Date) {
+	const raw = escape(date.toISOString())
+
+	return { raw, type: "Date" }
+}
+
+function stringifyURL(url: URL) {
+	const raw = escape(url.href)
+
+	return { raw, type: "URL" }
+}
+
+function stringifyArrayBufferLike(buffer: ArrayBuffer | ArrayBufferView<ArrayBufferLike>, options: StringifyOptions, depth: number) {
+	const type = buffer.constructor.name
+	let arr: (number | bigint)[]
+
+	if      (buffer instanceof DataView)    arr = Array.from(new Uint8Array(buffer.buffer, buffer.byteOffset, buffer.byteLength))
+	else if (buffer instanceof ArrayBuffer) arr = Array.from(new Uint8Array(buffer))
+	else arr = Array.from(buffer as unknown as Iterable<number | bigint>)
+
+	const raw = stringifyArray(arr, options, depth)
+
+	return { raw, type }
 }
