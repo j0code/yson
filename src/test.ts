@@ -145,3 +145,62 @@ console.dir(obj, { depth: Infinity })
 console.log(raw)
 console.dir(parsed, { depth: Infinity })
 console.log("type test", equals(obj, parsed) ? "success" : "failed")
+
+// Temporal type stringify tests with hardcoded expectations
+console.log("\n--- Temporal Type Stringify Tests ---\n")
+
+const temporalStringifyTests = [
+	// Instant
+	{ value: Temporal.Instant.from("2024-06-15T10:30:00Z"), expected: `Instant"2024-06-15T10:30:00Z"` },
+	{ value: Temporal.Instant.from("2020-01-01T00:00:00Z"), expected: `Instant"2020-01-01T00:00:00Z"` },
+	
+	// Duration
+	{ value: Temporal.Duration.from({ days: 5 }), expected: `Duration"P5D"` },
+	{ value: Temporal.Duration.from({ years: 1, months: 2, days: 3 }), expected: `Duration"P1Y2M3D"` },
+	
+	// PlainDate
+	{ value: Temporal.PlainDate.from("2024-06-15"), expected: `PlainDate"2024-06-15"` },
+	{ value: Temporal.PlainDate.from("2000-01-01"), expected: `PlainDate"2000-01-01"` },
+	
+	// PlainTime
+	{ value: Temporal.PlainTime.from("14:30:00"), expected: `PlainTime"14:30:00"` },
+	{ value: Temporal.PlainTime.from("23:59:59.999"), expected: `PlainTime"23:59:59.999"` },
+	
+	// PlainDateTime
+	{ value: Temporal.PlainDateTime.from("2024-06-15T14:30:00"), expected: `PlainDateTime"2024-06-15T14:30:00"` },
+	{ value: Temporal.PlainDateTime.from("2000-01-01T00:00:00"), expected: `PlainDateTime"2000-01-01T00:00:00"` },
+	
+	// PlainMonthDay
+	{ value: Temporal.PlainMonthDay.from("06-15"), expected: `PlainMonthDay"06-15"` },
+	{ value: Temporal.PlainMonthDay.from("12-25"), expected: `PlainMonthDay"12-25"` },
+	
+	// PlainYearMonth
+	{ value: Temporal.PlainYearMonth.from("2024-06"), expected: `PlainYearMonth"2024-06"` },
+	{ value: Temporal.PlainYearMonth.from("2000-01"), expected: `PlainYearMonth"2000-01"` },
+	
+	// ZonedDateTime
+	{ value: Temporal.ZonedDateTime.from("2024-06-15T14:30:00[UTC]"), expected: `ZonedDateTime"2024-06-15T14:30:00+00:00[UTC]"` },
+	{ value: Temporal.ZonedDateTime.from("2010-01-01T00:00:00[UTC]"), expected: `ZonedDateTime"2000-01-01T00:00:00+00:00[UTC]"` },
+]
+
+let passCount = 0
+let failCount = 0
+
+for (const test of temporalStringifyTests) {
+	try {
+		const stringified = YSON.stringify(test.value)
+		if (stringified === test.expected) {
+			console.log(`  ✓ ${stringified}`)
+			passCount++
+		} else {
+			console.log(`  ✗ got:      ${stringified}`)
+			console.log(`    expected: ${test.expected}`)
+			failCount++
+		}
+	} catch (e) {
+		console.log(`  ✗ error: ${(e as Error).message}`)
+		failCount++
+	}
+}
+
+console.log(`\n${passCount} passed, ${failCount} failed`)
