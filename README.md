@@ -1,7 +1,7 @@
 # YScript Object Notation
 YSON implementation for JavaScript
 
-YSON is similar to JSON.
+YSON is a superset of JSON.
 Main benefits:
 - no "" around keys
 - Types
