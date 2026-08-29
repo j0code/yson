@@ -101,5 +101,8 @@ function getLocation() {
 		return location.href
 	}
 
-	return pathToFileURL(process.cwd())
+	let cwd = process.cwd()
+	if (!cwd.endsWith("/")) cwd += "/"
+
+	return pathToFileURL(cwd)
 }
