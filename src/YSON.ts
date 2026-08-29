@@ -4,10 +4,15 @@ import { stringifyValue } from "./stringify.js"
 import { ParseOptions, StringifyOptions, YSONParseType, YSONValue } from "./types.js"
 import YSONSyntaxError from "./YSONSyntaxError.js"
 
+const isServerEnv = typeof window === "undefined"
 let fs: any = null
+let process: any = null
+let pathToFileURL: any = null
 
-if (typeof window === "undefined") {
+if (isServerEnv) {
 	fs = (await import("node:fs/promises")).default
+	process = (await import("node:process")).default
+	pathToFileURL = (await import("node:url")).pathToFileURL
 }
 
 /**
@@ -53,7 +58,7 @@ export default class YSON {
 	}
 
 	/**
-	 * Loads and parses raw YSON strings from an URL
+	 * Loads and parses raw YSON strings from a URL
 	 * 
 	 * In browser contexts,
 	 *   - http(s):// urls are fetched over the network,
@@ -71,13 +76,7 @@ export default class YSON {
 	 */
 	static async load(source: URL | string, types: Record<string, YSONParseType> = {}, options: ParseOptions = {}): Promise<YSONValue> {
 		if (typeof source == "string") {
-			let baseUrl
-			if ("location" in globalThis) {
-				baseUrl = location.href
-				if (!baseUrl.endsWith("/")) baseUrl += "/"
-			} else {
-				baseUrl = `file://${process.cwd()}/`
-			}
+			const baseUrl = getLocation()
 	
 			source = new URL(source, baseUrl)
 		}
@@ -89,10 +88,18 @@ export default class YSON {
 }
 
 async function fetchFile(url: URL): Promise<string> {
-	if (url.protocol == "file:" && !("location" in globalThis)) {
+	if (url.protocol == "file:" && isServerEnv) {
 		return await fs.readFile(url.pathname, "utf-8")
 	}
 
 	const res = await fetch(url)
 	return await res.text()
+}
+
+function getLocation() {
+	if (!isServerEnv) {
+		return location.href
+	}
+
+	return pathToFileURL(process.cwd())
 }
